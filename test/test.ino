@@ -1,3 +1,6 @@
+// this is using T-Deck CLI repository from abdallahnatsheh as a base for a simple dumb terminal
+// comunication, here is the original https://github.com/abdallahnatsheh/T-DECK-CLI/tree/main
+
 #include <Wire.h>
 #include <TFT_eSPI.h>
 #include "utilities.h"
@@ -41,6 +44,7 @@ void setup()
     tft.begin();
     tft.setRotation(1);
     tft.invertDisplay(1);
+    tft.setTextFont(1);
     clearScreen();
 
     // Display command prompt
@@ -65,8 +69,8 @@ void loop()
         incoming = Wire.read();
         if (incoming != (char)0x00)
         {
-            Serial.print("keyValue: ");
-            Serial.println(incoming);
+            //Serial.print("keyValue: ");
+            //Serial.println(incoming);
 
             if (incoming == '\n' || incoming == '\r')
             {
@@ -76,6 +80,12 @@ void loop()
                 tft.setCursor(10, tft.getCursorY());
                 tft.print("CMD> ");
                 tft.print(incoming);
+                Serial.println(command); 
+
+                // Clear the command buffer and reset the index
+                memset(command, 0, bufferSize);
+                commandIndex = 0;
+
                 //executeCommand();
             }
             else if (incoming == '\b' && commandIndex > 0)
@@ -100,6 +110,22 @@ void loop()
             }
         }
     }
+
+    // Check if there is any response from the computer
+    while (Serial.available() > 0)
+    {
+        // Read a character from the serial connection
+        char c = Serial.read();
+
+        // Display the character on the T-Deck's screen
+        tft.print(c); 
+    }
+    //reset cursor to top, and clean screen as a pseudo scroll
+    if(tft.getCursorY() > SCREEN_HEIGHT - tft.textsize) {
+        clearScreen();
+        tft.setCursor(10, promptY + 8);
+    } 
+
 }
 
 
@@ -117,8 +143,8 @@ void tdeck_begin(){
     tft.setCursor(10, promptY + 8);
     tft.println("QuagDeck v0.1");
     // Clear the command buffer and reset the index
-    // memset(command, 0, bufferSize);
-    // commandIndex = 0;
+    memset(command, 0, bufferSize);
+    commandIndex = 0;
     printFirstCommandScreen();
 }
 
@@ -127,7 +153,8 @@ void printFirstCommandScreen(){
     tft.setCursor(10, outputY);
     tft.setTextColor(TFT_DARKGREEN);
     tft.setTextSize(1); // Set a smaller font size
-    tft.print("CMD> ");
+    tft.print("If you are seeing this, you are not logged in \n Press enter to mess around typing \n ALT + B turns on the keyboard backlight \n ------------------------------------------------ \n \n");
+    //tft.print("CMD> ");
     tft.print(command);
 }
 
@@ -145,3 +172,4 @@ char getKeyboardInput()
     }
     
 }
+

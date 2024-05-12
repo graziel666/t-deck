@@ -33,7 +33,8 @@ TFT_eSPI tft = TFT_eSPI();
 
 void setup()
 {
-    Serial.begin(115200);
+    // Serial.begin(115200);
+    Serial.begin(9600);
     Serial.println("T-Deck Keyboard Master");
 
     pinMode(BOARD_POWERON, OUTPUT);
@@ -45,6 +46,9 @@ void setup()
     tft.setRotation(1);
     tft.invertDisplay(1);
     tft.setTextFont(1);
+
+    tft.setAttribute(UTF8_SWITCH, true); 
+    
     clearScreen();
 
     // Display command prompt
@@ -75,10 +79,10 @@ void loop()
             if (incoming == '\n' || incoming == '\r')
             {
                 // Execute command when Enter key is pressed
-                // tft.setCursor(10, tft.getCursorY());
+                //tft.setCursor(10, tft.getCursorY());
                 tft.println();
                 tft.setCursor(10, tft.getCursorY());
-                tft.print("CMD> ");
+                //tft.print("CMD> ");
                 tft.print(incoming);
                 Serial.println(command); 
 
@@ -121,9 +125,11 @@ void loop()
         tft.print(c); 
     }
     //reset cursor to top, and clean screen as a pseudo scroll
-    if(tft.getCursorY() > SCREEN_HEIGHT - tft.textsize) {
+    if(tft.getCursorY() > SCREEN_HEIGHT - 8) {
         clearScreen();
-        tft.setCursor(10, promptY + 8);
+        //tft.setCursor(10, promptY + 24);
+        tft.setCursor(10, outputY);
+
     } 
 
 }
@@ -141,7 +147,7 @@ void tdeck_begin(){
     tft.setTextColor(TFT_GREEN);
     tft.setTextSize(1);
     tft.setCursor(10, promptY + 8);
-    tft.println("QuagDeck v0.1");
+    tft.println("--------------\n |QuagDeck v0.1| \n --------------\n");
     // Clear the command buffer and reset the index
     memset(command, 0, bufferSize);
     commandIndex = 0;
@@ -154,6 +160,7 @@ void printFirstCommandScreen(){
     tft.setTextColor(TFT_DARKGREEN);
     tft.setTextSize(1); // Set a smaller font size
     tft.print("If you are seeing this, you are not logged in \n Press enter to mess around typing \n ALT + B turns on the keyboard backlight \n ------------------------------------------------ \n \n");
+    tft.setCursor(10, tft.getCursorY());
     //tft.print("CMD> ");
     tft.print(command);
 }
